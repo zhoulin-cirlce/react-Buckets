@@ -1,0 +1,19 @@
+{
+  "name": "react-buckets",
+  "version": "1.0.0",
+  "description": "自定义react全家桶",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhoulin-cirlce/react-Buckets.git"
+  },
+  "author": "circle",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhoulin-cirlce/react-Buckets/issues"
+  },
+  "homepage": "https://github.com/zhoulin-cirlce/react-Buckets#readme"
+}
