@@ -1,0 +1,46 @@
+{
+  "name": "cyclist",
+  "version": "0.2.2",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mafintosh/cyclist.git"
+  },
+  "description": "Cyclist is an efficient cyclic list implemention.",
+  "dependencies": {},
+  "keywords": [
+    "circular",
+    "buffer",
+    "ring",
+    "cyclic",
+    "data"
+  ],
+  "author": {
+    "name": "Mathias Buus Madsen",
+    "email": "mathiasbuus@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/mafintosh/cyclist/issues"
+  },
+  "_id": "cyclist@0.2.2",
+  "dist": {
+    "shasum": "1b33792e11e914a2fd6d6ed6447464444e5fa640",
+    "tarball": "https://registry.npmjs.org/cyclist/-/cyclist-0.2.2.tgz"
+  },
+  "_from": "cyclist@>=0.2.2 <0.3.0",
+  "_npmVersion": "1.3.5",
+  "_npmUser": {
+    "name": "mafintosh",
+    "email": "mathiasbuus@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "mafintosh",
+      "email": "mathiasbuus@gmail.com"
+    }
+  ],
+  "directories": {},
+  "_shasum": "1b33792e11e914a2fd6d6ed6447464444e5fa640",
+  "_resolved": "https://registry.npmjs.org/cyclist/-/cyclist-0.2.2.tgz",
+  "readme": "ERROR: No README data found!",
+  "homepage": "https://github.com/mafintosh/cyclist#readme"
+}

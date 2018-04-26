@@ -7,8 +7,10 @@
     npm init  
 ```
 ## 填好相关信息如图
-<img src="/public/image/package.png" width="550" height="550"/>
+<img src="/public/image/package.png"/>
+
 ## 安装webpack
+
 * 需要有全局安装哦，不然一会用webpack编译时会报错的
 * 关于装依赖加入package.json时，加 --save-dev表示开发环境要用的依赖，如果加 -save表示生产环境依然要用的依赖。
 ```shell
@@ -69,5 +71,69 @@
 ```
 * 在浏览器打开index.html
 <img src="/public/image/react1.png" />
+
+## 安装与配置babel
+平时大家在项目中不管用的vue还是react,应该大多都开始用ES6或ES7的语法了吧。想必都了解如果想让浏览器可以直接识别，基本都会选用babel插件进行编译转换。下面为大家一一介绍：
+* babel-core 调用Babel的API进行转码使用
+* babel-loader 允许使用babel和webpack将文件转化成JavaScript
+* babel-preset-es2015 将ES6解析成ES5
+* babel-preset-react 解析JSX语法
+* babel-preset-stage-0 解析ES7提案
+那么先统一安装下
+```shell
+    npm install --save-dev babel-core babel-loader babel-preset-es2015 babel-preset-react babel-preset-stage-0
+```
+安装好后，添加配置文件
+```shell
+    touch .babelrc
+```
+打开文件，对babel进行配置,注：此处stage-0是包含stage-1,stage-2,stage-3
+```js
+    {
+        "presets":[
+            "es2015",
+            "react",
+            "stage-0"
+        ],
+        "plugins":[]
+    }
+```
+* 在webpack配置中加入babel,修改webpack.dev.config.js
+在配置babel-loader模块时，将cacheDirectory=true是为了缓存编译结果，优化下次编译的。
+```js
+    modle:{
+        rules:[{
+            test:/\.js$/,
+            use:['babel-loader?cacheDirectory=true'],
+            include:path.join(__dirname,'src')
+        }]
+    }
+
+```
+* 配置好了后，对babel进行测试，修改src/index.js
+```js
+//使用ES6的箭头函数
+var babeltest=()=>
+    console.log('This is Babel Test!');
+babeltest();
+```
+<img src="/public/image/react2.png" />
+
+## 安装与配置react
+* 安装
+```shell
+    npm install --save react react-dom
+```
+* 页面中引入src/index.js
+```js
+    import React from 'react';
+    import ReactDom from 'react-dom';
+    ReactDom.reader(
+        <div>Hello React!</div>,
+        document.getElementById('app')
+    )
+```
+<img src="/public/image/react3.png" />
+
 
 
