@@ -46,8 +46,9 @@
 ```shell
     webpack --config webpack.dev.config.js
 ```
-## 效果如图
+效果如图
 <img src="/public/image/webpack.png" />
+
 * 此时发现目录下生成了 dist/bundle.js
 * 我们在根目录下新建 index.html
 ```shell
@@ -70,7 +71,18 @@
 </html>
 ```
 * 在浏览器打开index.html
-<img src="/public/image/react1.png" />
+<img src="/public/image/react1.png" height="600px"/>
+* 编译优化：我们每次编译都要输那么长串的命令太难记，我们在package.json中设置命令，简化它：
+```shell
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build":"webpack --config webpack.dev.config.js"
+    },
+```
+* 运行的时候使用,此处要注意下webpack的版本，如果是4.0则会提示装webpack-cli模块
+```shell
+    npm run build
+```
 
 ## 安装与配置babel
 平时大家在项目中不管用的vue还是react,应该大多都开始用ES6或ES7的语法了吧。想必都了解如果想让浏览器可以直接识别，基本都会选用babel插件进行编译转换。下面为大家一一介绍：
@@ -117,7 +129,7 @@ var babeltest=()=>
     console.log('This is Babel Test!');
 babeltest();
 ```
-<img src="/public/image/react2.png" />
+<img src="/public/image/react2.png" height="600px"/>
 
 ## 安装与配置react
 * 安装
@@ -129,11 +141,40 @@ babeltest();
     import React from 'react';
     import ReactDom from 'react-dom';
     ReactDom.reader(
-        <div>Hello React!</div>,
+        <div>First React!</div>,
         document.getElementById('app')
     )
 ```
-<img src="/public/image/react3.png" />
+<img src="/public/image/react4.png" height="600px"/>
+* 自定义一个组件,建好目录，我们把组件放入src/component中
+```shell
+    cd src
+    mkdir component && cd component
+    mkdir Hello && cd Hello
+    touch Hello.js
+```
+* 进入Hello.js
+```js
+import React, {Component} from 'react';
+export default class Hello extends Component{
+    reder(){
+        return(
+            <div>Hello React!</div>
+        )
+    }
+}
+```
+* 引用Hello.js,进入src/index.js
+```js
+    import React from 'react';
+    import ReactDom from 'react-dom';
+    import Hello from './component/Hello/Hello';
+    ReactDom.reader(
+        <Hello/>,
+        document.getElementById('app');
+    )
+```
+<img src="/public/image/react3.png" height="600px"/>
 
 
 

@@ -4,10 +4,17 @@
 // document.getElementById('app').innerHTML='This is Babel Test!';
 // babeltest();
 
+// import React from 'react';
+// import ReactDom from 'react-dom';
+// ReactDom.render(
+//     <div>First React!</div>,
+//     document.getElementById('app')
+// )
+
 import React from 'react';
 import ReactDom from 'react-dom';
+import Hello from './component/Hello/Hello';
 ReactDom.render(
-    <div>Hello React!</div>,
+    <Hello/>,
     document.getElementById('app')
 )
-
