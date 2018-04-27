@@ -280,7 +280,7 @@ webpack-dev-server是我们做前后端分离时，常会用到的依赖，它�
     webpack-dev-server --config webpack.dev.config.js
 ```
 打开http://localhost:8080
-<img src="/public/image/react5.png" height="600px"/>
+<img src="/public/image/react6.gif" height="600px"/>
 
 8080是默认端口，可更改配置。同样，我们把编译命令优化下：
 ```js
@@ -291,7 +291,6 @@ webpack-dev-server是我们做前后端分离时，常会用到的依赖，它�
     },
 ```
 * 小贴示：可以试试打开浏览器后，去删除dist/bundle.js哦，是不是页面依然可以打开呢，因为webpack-dev-server编译后会缓存在内存中！
-<img src="/public/image/react6.gif" height="600px"/>
 
 #####  附webpack-dev-server 基本配置
 1.  color : 打印日志为彩色
