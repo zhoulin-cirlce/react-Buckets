@@ -50,9 +50,9 @@
 <img src="/public/image/webpack.png" />
 
 * 此时发现目录下生成了 dist/bundle.js
-* 我们在根目录下新建 index.html
+* 我们在dist目录下新建 index.html
 ```shell
-    touch index.html
+    touch ./dist/index.html
 ```
 * 编辑index.html
 ```html
@@ -66,12 +66,13 @@
 </head>
 <body>
     <div id="app"></div>
-    <script type="text/javascript" src="./dist/bundle.js"></script>
+    <script type="text/javascript" src="./bundle.js"></script>
 </body>
 </html>
 ```
 * 在浏览器打开index.html
 <img src="/public/image/react1.png" height="600px"/>
+
 * 编译优化：我们每次编译都要输那么长串的命令太难记，我们在package.json中设置命令，简化它：
 ```shell
     "scripts": {
@@ -146,6 +147,7 @@ babeltest();
     )
 ```
 <img src="/public/image/react4.png" height="600px"/>
+
 * 自定义一个组件,建好目录，我们把组件放入src/component中
 ```shell
     cd src
@@ -175,6 +177,135 @@ export default class Hello extends Component{
     )
 ```
 <img src="/public/image/react3.png" height="600px"/>
+
+## 路由配置react-router
+* 安装与目录新建
+```shell
+    npm install --save react-router-dom
+    cd src
+    mkdir router && touch router/router.js
+```
+* 打开router.js,配置home和about页面
+```js
+    import React from 'react';
+    import {BrowserRoter as Router,Route,Swith,Link} from 'react-router-dom';
+    import Home from '../pages/Home/Home';
+    import Page1 from '../pages/About/About';
+
+    const getRouter=()=>(
+        <Router>
+            <div>
+                <ul>
+                    <li><Link to="/">首页</Link></li> 
+                    <li><Link to="/about">About</Link></li> 
+                </ul>
+                <Switch>
+                    <Route exact path="/" componen={Home} />
+                    <Route path="/about" component={About}/>
+                </Switch>
+            </div>
+        </Router>
+    );
+    export default getRouter;
+```
+* 新建好组件文件目录
+```shell
+cd src
+mkdir pages && cd pages
+mkdir Home && touch Home/Home.js
+mkdet About && touch About/About.js
+```
+* 打开Home.js,定义内容
+```js
+    import React,{Component} from 'react';
+    export default class Home extends Component{
+        render(){
+            return(
+                <div>
+                    <h1>欢迎来到我的网站</h1>
+                    <p>这是一个首页</p>
+                </div>
+            )
+        }
+}
+
+```
+* 打开About.js,定义内容
+```js
+    import React,{Component} from 'react';
+    export default class About extends Component{
+        render(){
+            return(
+                <div>
+                    <h2>关于我们</h2>
+                    <p>自定义react全家桶</p>
+                </div>
+            )
+        }
+    }
+```
+* 在入口文件src/index.js，引入Router
+```js
+    import React from 'react';
+    import ReactDom from 'react-dom';
+    import getRouter from './router/router';
+    ReactDom.render(
+        getRouter(),
+        document.getElementById('app')
+    )
+```
+* 编译下，效果如图
+```shell
+    npm run build
+```
+<img src="/public/image/react5.png" height="600px"/>
+
+我们发现页面是出来了，但是点击切换不了路由，原因是因为我们需要配置一个web服务器来指向index.html，在这里我们来配置一个webpack-dev-server。
+
+## web服务器配置 webpack-dev-server
+webpack-dev-server是我们做前后端分离时，常会用到的依赖，它是一个小型的静态文件服务器，可以为webpack打包后生成的文件提供web服务器功能。
+* 安装,这个和webpack一样，要有全局安装才行。
+```shell
+    npm install webpack-dev-server@2 --save-dev
+```
+* 修改配置文件webpack.dev.config.js
+```js
+    devServer:{
+        //将服务器根目录指向打包后的dist文件，默认是指向项目的根目录
+        contentBase:path.join(__dirname,'./dist');
+    }
+```
+* 测试
+```shell
+    webpack-dev-server --config webpack.dev.config.js
+```
+打开http://localhost:8080
+<img src="/public/image/react5.png" height="600px"/>
+
+8080是默认端口，可更改配置。同样，我们把编译命令优化下：
+```js
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "webpack --config webpack.dev.config.js",
+        "start": "webpack-dev-server --config webpack.dev.config.js --color --progress"
+    },
+```
+* 小贴示：可以试试打开浏览器后，去删除dist/bundle.js哦，是不是页面依然可以打开呢，因为webpack-dev-server编译后会缓存在内存中！
+<img src="/public/image/react6.gif" height="600px"/>
+
+#####  附webpack-dev-server 基本配置
+1.  color : 打印日志为彩色
+2.  progress : 日志显示进度
+3.  historyApiFallback : 值为Boolean，设为true时，作意404的请求路径，会指向index.html
+4.  host : 默认为loaclhost，可以设为IP地址，局域网内用其它设备IP访问
+5.  port : 端口号，默认为8080
+6.  proxy : 代理，比如后端交互的服务器地址为localhost:9000,设置如下
+```js
+    proxy:{
+        "/api":"htpp://localhost:9000"
+    }
+```
+
 
 
 
