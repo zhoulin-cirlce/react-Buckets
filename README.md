@@ -1,7 +1,15 @@
 # react-Buckets
 自定义一个React全家桶
 
-## 创建一个文件目录并初始化package.json
+## 目录
+* [初始文件创建](#1)
+* [安装webpack](#2)
+* [安装与配置babel](#3)
+* [安装与配置react](#4)
+* [路由配置react-router](#5)
+* [web服务器配置](#6)
+
+<h2 id="1"> 创建一个文件目录并初始化package.json </h2>
 ```shell
     mkdir react-Buckets 
     npm init  
@@ -9,7 +17,7 @@
 ## 填好相关信息如图
 <img src="/public/image/package.png"/>
 
-## 安装webpack
+<h2 id="2"> 安装webpack</h2>
 
 * 需要有全局安装哦，不然一会用webpack编译时会报错的
 * 关于装依赖加入package.json时，加 --save-dev表示开发环境要用的依赖，如果加 -save表示生产环境依然要用的依赖。
@@ -85,7 +93,7 @@
     npm run build
 ```
 
-## 安装与配置babel
+<h2 id="3"> 安装与配置babel</h2>
 平时大家在项目中不管用的vue还是react,应该大多都开始用ES6或ES7的语法了吧。想必都了解如果想让浏览器可以直接识别，基本都会选用babel插件进行编译转换。下面为大家一一介绍：
 * babel-core 调用Babel的API进行转码使用
 * babel-loader 允许使用babel和webpack将文件转化成JavaScript
@@ -132,7 +140,7 @@ babeltest();
 ```
 <img src="/public/image/react2.png" height="600px"/>
 
-## 安装与配置react
+<h2 id="4"> 安装与配置react </h2>
 * 安装
 ```shell
     npm install --save react react-dom
@@ -178,7 +186,7 @@ export default class Hello extends Component{
 ```
 <img src="/public/image/react3.png" height="600px"/>
 
-## 路由配置react-router
+<h2 id="5"> 路由配置react-router </h2>
 * 安装与目录新建
 ```shell
     npm install --save react-router-dom
@@ -262,7 +270,7 @@ mkdet About && touch About/About.js
 
 我们发现页面是出来了，但是点击切换不了路由，原因是因为我们需要配置一个web服务器来指向index.html，在这里我们来配置一个webpack-dev-server。
 
-## web服务器配置 webpack-dev-server
+<h2 id="6"> web服务器配置 webpack-dev-server</h2>
 webpack-dev-server是我们做前后端分离时，常会用到的依赖，它是一个小型的静态文件服务器，可以为webpack打包后生成的文件提供web服务器功能。
 * 安装,这个和webpack一样，要有全局安装才行。
 ```shell
