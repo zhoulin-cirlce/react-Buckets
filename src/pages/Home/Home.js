@@ -1,9 +1,21 @@
 import React,{Component} from 'react';
 export default class Home extends Component{
+    constructor(props){
+        super(props);
+        this.state={
+            count:0
+        }
+    }
+    _test(){
+        this.setState({
+            count:++this.state.count
+        })
+    }
     render(){
         return(
             <div>
-                <h1>欢迎来到我的网站,这是一个首页</h1>
+                <h1>当前共点击次数为：{this.state.count}</h1>
+                <button onClick={()=> this._test()}>点击我！</button>
             </div>
         )
     }

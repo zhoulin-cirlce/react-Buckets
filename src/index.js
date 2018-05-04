@@ -22,8 +22,25 @@
 import React from 'react';
 import ReactDom from 'react-dom';
 import getRouter from './router/router';
-ReactDom.render(
-    getRouter(),
-    document.getElementById('app')
-);
+import {AppContainer} from 'react-hot-loader';
+ 
+const hotLoader = RootElement => {
+    ReactDom.render(
+        <AppContainer>
+            {RootElement}
+        </AppContainer>,
+        document.getElementById('app')
+    );
+}
+
+hotLoader(getRouter());
+
+if(module.hot){
+    module.hot.accept('./router/router',()=>{
+        const getRouter=require('./router/router').default;
+        hotLoader(getRouter());
+    }); 
+}
+
+
  

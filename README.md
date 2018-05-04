@@ -313,6 +313,114 @@ webpack-dev-server是我们做前后端分离时，常会用到的依赖，它�
     }
 ```
 
+## 热更新
+我们在实际开发时，都有用到热更新，在修改代码后，不用每次都重启服务，而是自动更新。并而不是让浏览器刷新，只是刷新了我们所改代码影响到的模块。
+关于热更新的配置，可看介绍[戳这里](https://doc.webpack-china.org/guides/hot-module-replacement/#%E9%80%9A%E8%BF%87-node-js-api)
+
+<img src="/public/image/react8.png" height="600px"/>
+
+因为我们用了webpack-dev-server，我们可以不需要向上图一样配置，只需要修改启动配置以修改默认值,--hot项。
+```shell
+    "start": "webpack-dev-server --config webpack.dev.config.js --color --progress --hot"
+```
+然后要做的是当模块更新后，通知入口文件index.js。我们看官网的教程配置
+<img src="/public/image/react7.png" height="600px"/>
+
+打开src/index.js，如上图配置
+```js
+import React from 'react';
+import ReactDom from 'react-dom';
+import getRouter from './router/router';
+
+if(module.hot){
+    module.hot.accept();
+}
+ReactDom.render(
+    getRouter(),
+    document.getElementById?('app');
+)
+```
+下面来试试重启后，修改Home或About组件，保存后是不是自动更新啦！
+<img src="/public/image/react9.png" height="300px"/>
+
+到这里，你以为结束了吗，NO!NO!NO!在此我们成功为自己挖下了坑（说多了都是泪）。献上一段demo
+src/pages/Home/Home.js
+```js
+import React,{Component} from 'react';
+export default class Home extends Component{
+    constructor(props){
+        super(props);
+        this.state={
+            count:0
+        }
+        
+    }
+    _test(){
+        this.setState({
+            count:++this.state.count
+        });
+    }
+    render(){
+        return(
+            <div>
+                <h1>当前共点击次数为：{this.state.count}</h1>
+                <button onClick={()=> this._test()}>点击我！</button>
+            </div>
+        )
+    }
+}
+```
+此时，按钮每点击一次，状态会自增，但是如果我们用热更新改一下文件，会发现，状态被清零了！！！显然这不是我们要的效果，那么我们平时在项目里为什么会用到react-hot-loader就明了了，因为可以保存状态。试试：
+安装依赖
+```shell
+npm install react-hot-loader --save-dev
+```
+按[官网](https://www.npmjs.com/package/react-hot-loader)介绍来配置
+* 首先是.babelrc文件
+```
+{
+    "plugins":["react-hot-loader/babel"]
+}
+```
+* 修改 webpack.dev.config.js
+```js
+    entry:[
+        'react-hot-loader/patch',
+        path.join(__dirname,'src/index.js')
+    ]
+```
+* 修改src/index.js
+```js
+import React from 'react';
+import ReactDom from 'react-dom';
+import getRouter from './router/router';
+import {AppContainer} from 'react-hot-loader';
+
+const hotLoader = RootElement => {
+    ReactDom.render(
+        <AppContainer>
+            {RootElement}
+        </AppContainer>,
+        document.getElementById('app')
+    );
+}
+/*初始化*/
+hotLoader(getRouter());
+
+if(module.hot){
+    module.hot.accept('./router/router',()=>{
+        const getRouter=require('./router/router').default;
+        hotLoader(getRouter());
+    }); 
+}
+
+
+ 
+```
+
+
+
+
 
 
 
