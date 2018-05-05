@@ -21,7 +21,7 @@
 
 import React from 'react';
 import ReactDom from 'react-dom';
-import getRouter from './router/router';
+import getRouter from 'router/router';
 import {AppContainer} from 'react-hot-loader';
  
 const hotLoader = RootElement => {
@@ -36,7 +36,7 @@ const hotLoader = RootElement => {
 hotLoader(getRouter());
 
 if(module.hot){
-    module.hot.accept('./router/router',()=>{
+    module.hot.accept('router/router',()=>{
         const getRouter=require('./router/router').default;
         hotLoader(getRouter());
     }); 

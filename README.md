@@ -417,6 +417,29 @@ if(module.hot){
 
  
 ```
+哇哦哇哦，成功保存状态啦，666!
+
+## 路径的优化
+上面的demo我们已经写过好几个组件了，发现在引用的时候都要用上相对路径，这样非常不方便。我们可以优化一下。    
+我们以前做数学题总会寻找一些共同点提出来，这里也一样。我们的公共组件都放在了src/component文件目录下，业务组件都放在src/pages目录下。在webpack中，提供一个别名配置，让我们无论在哪个位置下，都通过别名从对应位置去读取文件。 
+修改webpack.dev.config.js
+```js
+resolve:{
+    alias:{
+        pages:path.join(__dirname,'src/pages'),
+        component:path.join(__dirname,'src/component'),
+        router:path.join(__dirname,'src/router')
+    }
+}
+```
+然后按下面的形式改掉之前的路径
+```js
+/*之前*/
+import Home from '../pages/Home/Home';
+/*之后*/
+import Home from 'pages/Home/Home';
+```
+看下改了路径后，是不是依然可以正常运行呢！
 
 
 
