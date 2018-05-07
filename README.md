@@ -441,6 +441,140 @@ import Home from 'pages/Home/Home';
 ```
 看下改了路径后，是不是依然可以正常运行呢！
 
+## Redux
+如果用react做过项目的，基本对redux就不陌生了吧。此文主讲全家桶的搭建，在此我就不详细解说。简单说下引用，做个小型计数器。
+* 安装
+```shell
+npm install --save redux
+```
+* 相关目录搭建
+```shell
+cd src
+mkdir redux && cd redux
+mkdir actions
+mkdir reducers
+touch reducer.js
+touch store.js
+touch actions/counter.js
+touch reducers/counter.js
+```
+* 增加文件的别名
+打开webpack.dev.config.js
+```js
+alias:{
+    ...
+    actions:path.join(__dirname,'src/redux/actions'),
+    reducers:path.join(__dirname,'src/redux/reducers'),
+    redux:path.join(__dirname,'src/redux')
+}
+```
+* 创建action，action是来描述不同的场景，通过触发action进入对应reducer
+打开文件src/redux/actions/counter.js
+```js
+export const INCREMENT = "counter/INCREMENT";
+export const DECREMENT = "counter/DECREMENT";
+export const RESET = "counter/RESET";
+
+export function increment(){
+    return {type:INCREMENT}
+}
+export function decrement(){
+    return {type:DECREMENT}
+}
+export function reset(){
+    return {type:RESET}
+}
+```
+* 接下来写reducers，用来接收action和旧的state,生成新的state
+src/redux/reducers/counter.js
+```js
+import {INCREMENT,DECREMENT,RESET} from '../actions/counter';
+const initState = {
+    count : 0
+};
+
+export default function reducer(state=initState,action){
+    switch(action.type){
+        case INCREMENT:
+            return {
+                count:state.count+1
+            };
+        case DECREMENT:
+            return {
+                count:state.count-1
+            };
+        case RESET:
+            return {
+                count:0
+            };
+        default:
+            return state
+    }
+}
+```
+* 将所有的reducers合并到一起
+src/redux/reducers.js
+```js
+import counter from './rdeducers/counter';
+export default function combineReducers(state={},action){
+    return {
+        counter:counter(state.counter,action)
+    }
+}
+```
+* 创建store仓库，进行存取与监听state的操作
+1. 应用中state的保持
+2. getState()获取state
+3. dispatch(action)触发reducers,改变state
+4. subscribe(listener)注册监听器    
+打开src/redux/store.js
+```js
+import {createStore} from 'redux';
+import combineReducers from './reducers.js';
+let store = createStore(combineReducers);
+export default store;
+```
+* 测试
+```shell
+cd src 
+cd redux
+touch testRedux.js
+```
+打开src/redux/testRedux.js
+```js
+import {increment,decrement,reset} from './actions/counter';
+import store from './store';
+//初始值
+console.log(store.getState());
+//监听每次更新值
+let unsubscribe = store.subscribe(() =>
+    console.log(store.getState())
+);
+//发起action
+store.dispatch(increment());
+store.dispatch(decrement());
+store.dispatch(reset());
+//停止监听
+unsubscribe();
+```
+在当前目录下运行
+```shell
+webpack testRedux.js build.js
+node build.js
+```
+我这里报如下错误了
+<img src="/public/image/react10.png" height="500px"/>
+
+经排查，发现是node版本的问题，我用[nvm](https://github.com/creationix/nvm)来作node版本管理工具，从原本的4.7切换到9.0的版本，运行正确。
+<img src="/public/image/react11.png" height="200px"/>
+
+我们试用了一下redux，对于在项目熟用的童鞋来说，简直是没难度吧。那么回归正题，我们用redux搭配着react一起用。
+
+
+
+
+
+
 
 
 
