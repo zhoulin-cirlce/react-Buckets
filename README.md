@@ -465,7 +465,7 @@ alias:{
     ...
     actions:path.join(__dirname,'src/redux/actions'),
     reducers:path.join(__dirname,'src/redux/reducers'),
-    redux:path.join(__dirname,'src/redux')
+    //redux:path.join(__dirname,'src/redux') 与模块重名
 }
 ```
 * 创建action，action是来描述不同的场景，通过触发action进入对应reducer
@@ -568,7 +568,149 @@ node build.js
 经排查，发现是node版本的问题，我用[nvm](https://github.com/creationix/nvm)来作node版本管理工具，从原本的4.7切换到9.0的版本，运行正确。
 <img src="/public/image/react11.png" height="200px"/>
 
-我们试用了一下redux，对于在项目熟用的童鞋来说，简直是没难度吧。那么回归正题，我们用redux搭配着react一起用。
+我们试用了一下redux，对于在项目熟用的童鞋来说，简直是没难度吧。那么回归正题，我们用redux搭配着react一起用。将上述counter改成一个组件。
+* 文件初始化搭建
+```shell
+cd src/pages
+mkdir Counter
+touch Counter/Counter.js
+```
+打开文件
+```js
+import React,{Component} from 'react';
+export default class Counter extends Component{
+    render(){
+        return(
+            <div>
+                <h2>当前计数为：</h2>
+                <button onClick={
+                    ()=>{
+                        console.log('自增')；
+                    }
+                }>自增
+                </button>
+                <button onClick={()=>{
+                    console.log('自减');
+                }}>自减
+                </button>
+                <button onClick={()=>{
+                    console.log('重置')
+                }}>重置
+                </button>
+            </div>
+        )
+    }
+}
+```
+* 路由增加
+router/router.js
+```js
+import Home from 'pages/Home/Home';
+import About from 'pages/About/About';
+import Counter from 'pages/Counter/Counter';
+
+const getRouter=()=>(
+    <Router>
+        <div>
+            <ul>
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/about">About</Link></li>
+                <li><Link to="counter">Counter</Link></li>
+            </ul>
+        
+            <Switch>
+                <Route exact path="/" component={Home}/>
+                <Route path="/about" component={About}/>
+                <Route path="/counter" component={Counter}/>
+            </Switch>
+        </div>
+    </Router>
+
+);
+export default getRouter;
+```
+我们可以先跑一下，检查路由跳转是否正常。下面将redux应用到Counter组件上。
+#### react-redux
+* 安装 react-redux
+```shell
+npm install --save react-redux
+```
+* 组件的state绑定
+因为react-redux提供了connect方法，接收两个参数。
+1. mapStateToProps：把redux的state,转为组件的Props;
+2. mapDispatchToprops:触发actions的方法转为Props属性函数。
+connect()的作用有两个：一是从Redux的state中读取部分的数据，并通过props把这些数据返回渲染到组件中；二是传递dispatch(action)到props。
+打开 src/pages/Counter/Counter.js
+```js
+import React,{Component} from 'react';
+import {increment,decrement,reset} from 'actions/counter';
+import {connect} from 'react-redux';
+class Counter extends Component{
+    render(){
+        return(
+            <div>
+                <h2>当前计数为：{this.props.counter.count}</h2>
+                <button onClick={()=>{
+                    this.props.increment()
+                }}>自增</button>
+                <button onClick={()=>{
+                    this.props.decrement()
+                }}>自减</button>
+                <button onClick={()=>{
+                    this.props.reset()
+                }}>重置</button>
+            </div>
+        )
+    }
+}
+const mapStateToProps = (state) => {
+    return {
+        counter:state.counter
+    }
+};
+const mapDispatchToProps = (dispatch) => {
+    return {
+        increment:()=>{
+            dispatch(increment())
+        },
+        decrement:()=>{
+            dispatch(decrement())
+        },
+        reset:()=>{
+            dispatch(reset())
+        }
+    }
+};
+export default connect(mapStateToProps,mapDispatchToProps)(Counter);
+```
+* 调用的用的时候到src/index.js中，我们传入store
+注：我们引用react-redux中的Provider模块，它可以让所有的组件能访问到store，不用手动去传，也不用手动去监听。
+```js
+...
+import {Provider} from 'react-redux';
+import store from './redux/store';
+ 
+const hotLoader = RootElement => {
+    ReactDom.render(
+        <AppContainer>
+            <Provider store={store}>
+                {RootElement}
+            </Provider>
+        </AppContainer>,
+        document.getElementById('app')
+    );
+}
+...
+```
+然后我们运行下，效果如图
+<img src="/public/image/react12.gif" height="600px"/>
+
+#### 异步action
+在实际开发中，我们更多的是用异步action,因为要前后端联合起来处理数据。
+正常我们去发起一个请求时，给用户呈现的大概步骤如下：
+1. 页面加载，请求发起，出现loading效果
+2. 请求成功，停止loading效果，data渲染
+3. 请求失败，停止loading效果，返回错误提示。
 
 
 
