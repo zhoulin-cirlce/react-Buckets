@@ -712,6 +712,232 @@ const hotLoader = RootElement => {
 2. 请求成功，停止loading效果，data渲染
 3. 请求失败，停止loading效果，返回错误提示。
 
+下面我们模拟一个用户信息的get请求接口:  
+* 创建文件
+```shell
+cd dist
+mkdir api && cd api
+touch userInfo.json
+```
+* 打开文件模拟数据
+```js
+{
+    "name":"circle",
+    "age":24,
+    "like":"piano",
+    "female":"girl"
+}
+```
+* 创建action
+```shell
+cd src/redux/actions
+touch userInfo.js
+```
+在action中，我要需要创建三种状态：请求中，请求成功，请求失败。打开redux/actions/userInfo.js
+```js
+export const GET_USERINFO_REQUEST="userInfo/GET_USERINFO_REQUEST";
+export const GET_USERINFO_SUCCESS="userInfo/GET_USERINFO_SUCCESS";
+export const GET_USERINFO_FAIL="userInfo/GET_USERINFO_FAIL";
+
+export function getUserInfoRequest(){
+    return {
+        type:GET_USERINFO_REQUEST
+    }
+}
+export function getUserInfoSuccess(userInfo){
+    return{
+        type:GET_USERINFO_SUCCESS,
+        userInfo:userInfo
+    }
+}
+export function getUserInfoFail(){
+    return{
+        type:GET_USERINFO_FAIL
+    }
+}
+```
+* 创建reducer
+```shell
+cd src/redux/reducers
+touch userInfo.js
+```
+打开文件
+```js
+import {GET_USERINFO_REQUEST,GET_USERINFO_SUCCESS,GET_USERINFO_FAIL} from 'actions/userInfo';
+
+const initState = {
+    isLoading:false,
+    userInfo:{},
+    errMsg:''
+}
+
+export default function reducer(state=initState,action){
+    switch(action.type){
+        case GET_USERINFO_REQUEST:
+            return{
+                ...state,
+                isLoading:true,
+                userInfo:{},
+                errMsg:''
+            }
+        case GET_USERINFO_SUCCESS:
+            return{
+                ...state,
+                isLoading:false,
+                userInfo:action.userInfo,
+                errMsg:''
+            }
+        case GET_USERINFO_FAIL:
+            return{
+                ...state,
+                isLoading:false,
+                userInfo:{},
+                errMsg:'请求出错'
+            }
+        default:
+            return state;
+    }
+}
+```
+以上...state的意思是合并新旧的所有state可枚举项。   
+* 与之前做计数器一样，接下来到src/redux/reducers.js中合并。
+```js
+import counter from 'reducers/counter';
+import userInfo from 'reducers/userInfo';
+
+export default function combineReducers(state = {}, action) {
+    return {
+        counter: counter(state.counter, action),
+        userInfo:userInfo(state.userInfo,action)
+    }
+}
+```
+redux中提供了一个combineReducers函数来合并reducer,不需要我们自己写合并函数，在此我们对上面的reducers.js作下优化。
+```js
+import counter from 'reducers/counter';
+import userInfo from 'reducers/userInfo';
+import {combineReducers} from 'redux';
+
+export default combineReducers({
+    counter,
+    userInfo
+});
+```
+* 接下来发起请求
+打开文件 src/redux/actions/userInfo.js,加入
+```js
+...
+export function getUserInfo(){
+    return function(dispatch){
+        dispatch(getUserInfoRequest());
+        return fetch('http://localhost:8000/api/userInfo.json')
+            .then((response=>{
+                return response.json()
+            }))
+            .then((json)=>{
+                dispatch(getUserInfoSuccess(json))
+                }
+            ).catch(()=>{
+                dispatch(getUserInfoFail());
+                }
+            )
+    }
+}
+```
+之前我们做计数器时，与之对比现发action都是返回的对象，这里我们返回的是函数。    
+为了让action可以返回函数，我们需要装新的依赖redux-tuhnk。它的作用是在action到reducer时作中间拦截，让action从函数的形式转为标准的对象形式，给reducer作正确处理。
+```shell
+npm install --save redux-thunk
+```
+* 引入redux-thunk,打开src/redux/store.js
+我们可以使用Redux提供的applyMiddleware方法来使用一个或者是多个中间件，将它作为createStore的第二个参数传入即可。
+```js
+import {createStore,applyMiddleware} from 'redux';
+import combineReducers from './reducers.js';
+import thunkMiddleware from 'redux-thunk';
+
+let store = createStore(combineReducers,applyMiddleware(thunkMiddleware));
+
+export default store;
+```
+到这里我们基本的redux就搞定啦，下面写个组件来验证。
+```shell
+cd src/pages
+mkdir UserInfo && cd UserInfo
+touch UserInfo.js
+```
+打开文件
+```js
+import React,{Component} from 'react';
+import {connect} from 'react-redux';
+import {getUserInfo} from "actions/userInfo";
+
+class UserInfo extends Component{
+    render(){
+        const{userInfo,isLoading,errMsg} = this.props.userInfo;
+        return(
+            <div>
+                {
+                    isLoading ? '请求中...' : 
+                    (
+                        errMsg ? errMsg :
+                            <div>
+                                <h2>个人资料</h2>
+                                <ul>
+                                    <li>姓名：{userInfo.name}</li>
+                                    <li>年龄：{userInfo.age}</li>
+                                    <li>爱好：{userInfo.like}</li>
+                                    <li>性别：{userInfo.female}</li>
+                                </ul>
+                            </div>
+                    )
+                }
+                <button onClick={
+                    ()=> this.props.getUserInfo()
+                }>查看个人资料</button>
+            </div>
+        )
+    }
+}
+export default connect((state)=>({userInfo:state.userInfo}),{getUserInfo})(UserInfo);
+```
+* 配置路由，src/router/router.js
+```js
+...
+import React from 'react';
+import {BrowserRouter as Router,Route,Switch,Link} from 'react-router-dom';
+import Home from 'pages/Home/Home';
+import About from 'pages/About/About';
+import Counter from 'pages/Counter/Counter';
+import UserInfo from 'pages/UserInfo/UserInfo';
+
+const getRouter=()=>(
+    <Router>
+        <div>
+            <ul>
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/about">About</Link></li>
+                <li><Link to="counter">Counter</Link></li>
+                <li><Link to="userinfo">UserInfo</Link></li>
+            </ul>
+        
+            <Switch>
+                <Route exact path="/" component={Home}/>
+                <Route path="/about" component={About}/>
+                <Route path="/counter" component={Counter}/>
+                <Route path="/userinfo" component={UserInfo}/>
+            </Switch>
+        </div>
+    </Router>
+
+);
+export default getRouter;
+
+```
+* 运行效果如下
+<img src="/public/image/react13.gif" hieght="600px"/>
+
+
 
 
 
