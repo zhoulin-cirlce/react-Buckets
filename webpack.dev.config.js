@@ -11,11 +11,20 @@ module.exports={
         filename:'bundle.js'
     },
     module:{
-        rules:[{
-            test:/\.js$/,
-            use:['babel-loader?cacheDirectory=true'],
-            include:path.join(__dirname,'src')
-        }]
+        rules:[
+            {
+                test:/\.js$/,
+                use:['babel-loader?cacheDirectory=true'],
+                include:path.join(__dirname,'src')
+            },{
+                test:/\.less$/,
+                use:[
+                    'style-loader',
+                    {loader:'css-loader',options:{importLoaders:1}},
+                    { loader: 'less-loader', options: { strictMath: true, noIeCompat: true } }
+                ]
+            }
+        ]
     },
     devServer: {
         port: 8000,
@@ -23,6 +32,7 @@ module.exports={
         // historyApiFallback: true
         
     },
+    devtool:"inline-source-map",
     resolve:{
         alias:{
             pages:path.join(__dirname,'src/pages'),

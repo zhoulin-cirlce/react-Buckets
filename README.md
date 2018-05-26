@@ -937,6 +937,98 @@ export default getRouter;
 * 运行效果如下
 <img src="/public/image/react13.gif" hieght="600px"/>
 
+## Source Maps
+当javaScript抛出异常时，我们会很想知道它发生在哪个文件的哪一行。但是webpack 总是将文件输出为一个或多个bundle，我们对错误的追踪很不方便。Source maps试图解决这一个问题，我们只需要改变一下配置项即可。
+在webpack.dev.config.js中加入：
+```js
+devtool:"inline-source-map"
+```
+## css编译
+* 这里以less-loader为例，先安装
+1. less-loader 是组件中可以引入less后缀的文件
+2. css-loader 是使css文件可以用@import和url(...)的方法实现require；
+3. style-loader 使计算后的样式加入到页面中。
+```shell
+npm install --save-dev less-loader less css-loader style-loader
+```
+* 配置webpack.dev.config.js文件
+```js
+ module:{
+        rules:[
+            {
+                test:/\.js$/,
+                use:['babel-loader?cacheDirectory=true'],
+                include:path.join(__dirname,'src')
+            },{
+                test:/\.less$/,
+                use:[
+                    'style-loader',
+                    {loader:'css-loader',options:{importLoaders:1}},
+                    'less-loader'
+                ]
+            }
+        ]
+    },
+```
+测试下
+```shell
+cd src/pages/Home
+touch Home.less
+```
+打开 Home.less
+```css
+.wrap{
+    width:300px;
+    height:300px;
+    background:red;
+    & .content{
+        width:200px;
+        height:200px;
+        margin:auto;
+        background:yellow;
+    } 
+ }
+```
+在Home.js中引入，并添加class
+```js
+import './Home.less'
+...
+  render(){
+        return(
+            <div>
+                <h1>当前共点击次数为：{this.state.count}</h1>
+                <button onClick={()=> this._test()}>点击我！</button>
+                <div className="wrap">
+                    <div className="content"></div>
+                </div>
+            </div>
+        )
+    }
+```
+因为添加了新的依赖，我们重新跑一次npm run start,效果如图
+<img src="/public/image/react14.png" hieght="600px"/>
+
+
+## 图片编译
+## 按需加载
+## 缓存
+## HtmlWEbpackPlugin
+## 公共代码提取
+## 生产环境构建
+## 文件压缩
+## 指定环境
+## 优化缓存
+## public patch 
+## 打包优化
+## 抽取css
+## 使用axios和middleware优化API请求
+## 调整文本编辑器
+## webpack配置优化
+## 404页面增加
+## babel-plugin-transform-runtime和babel-polyfill
+## PostCss
+
+
 
 
 
