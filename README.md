@@ -1138,11 +1138,61 @@ output:{
     chunkFilename:'[name].js'
 }
 ```
-运行npm run start 效果如图
+运行npm run start 效果如图  
 <img src="/public/image/react18.gif" hieght="600px"/>
 
 ## 缓存
-## HtmlWEbpackPlugin
+按需加载文件的进阶优化则是文件缓存。缓存我们要解决以下两个问题：
+1. 当用户首次访问Home.js时，进行文件的加载，第二次访问时再进行同样文件的加载吗？
+2. 当文件做了缓存时，我们如果有改动代码，重新打包，我们要如何更新缓存的文件？
+问题1在浏览器中已经对静态资源文件做了缓存，我们主要解决问题二。
+日常开发中，我们是通过打包修改文件名（比如加hash），使客户端能识别新的文件，重新加载。
+打开webpack.dev.config.js
+```js
+output:{
+    path:path.join(__dirname,'./dist'),
+    filename:'[name].[hash].js',
+    chunkFilename:'[name].[chunkhash].js'
+}
+```
+我们可以看到编译后的文件名已经变了
+<img src="/public/image/react19.png" hieght="300px"/>
+
+由于我们在dist/index.html中引用的还是bundle.js，所以我们要改成每次编译后自动插入到index.html中，可以用到HtmlWebpackPlugin。
+* 安装
+```shell
+npm install html-webpack-plugin --save-dev
+```
+* 新建入口模板文件index.html
+```shell
+cd src
+touch index.html
+```
+* 打开index.html
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>
+```
+* 修改webpack.dev.config.js配置文件
+```js
+var HtmlWebpackPlugin=require('html-webpack-plugin');
+...
+plugins:[new HtmlWebpackPlugin({
+    filename:'index.html',
+    template:path.join(__dirname,'src/index.html')
+})],
+```
+此时删掉之前的dist/index.html,运行npm run start访问正常。
 ## 公共代码提取
 ## 生产环境构建
 ## 文件压缩

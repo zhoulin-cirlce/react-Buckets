@@ -1,4 +1,5 @@
 var path=require('path');
+var HtmlWebpackPlugin=require('html-webpack-plugin');
 module.exports={
     // 入口文件指向src/index.js
     entry:[
@@ -8,8 +9,8 @@ module.exports={
     //打包后的文件到当前目录下的dist文件夹，名为bundle.js
     output:{
         path:path.join(__dirname,'./dist'),
-        filename:'bundle.js',
-        chunkFilename:'[name].js'
+        filename:'[name].[hash].js',
+        chunkFilename:'[name].[chunkhash].js'
     },
     module:{
         rules:[
@@ -37,6 +38,12 @@ module.exports={
 
         ]
     },
+    plugins:[
+        new HtmlWebpackPlugin({
+            filename:'index.html',
+            template:path.join(__dirname,'src/index.html')
+        })
+    ],
     devServer: {
         port: 8000,
         contentBase: path.join(__dirname, './dist'),
