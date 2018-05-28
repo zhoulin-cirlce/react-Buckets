@@ -1139,7 +1139,7 @@ output:{
 }
 ```
 运行npm run start 效果如图
-<img src="/public/image/react18.png" hieght="600px"/>
+<img src="/public/image/react18.gif" hieght="600px"/>
 
 ## 缓存
 ## HtmlWEbpackPlugin
