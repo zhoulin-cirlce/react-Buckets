@@ -25,14 +25,17 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
     "react-hot-loader": "^4.1.2",
     "style-loader": "^0.21.0",
+    "url-loader": "^1.0.1",
     "webpack": "^3.0.0",
     "webpack-dev-server": "^2.7.1"
   },
   "dependencies": {
+    "bundle-loader": "^0.5.6",
     "react": "^15.3.2",
     "react-dom": "^15.6.1",
     "react-hot-loader": "^4.1.2",

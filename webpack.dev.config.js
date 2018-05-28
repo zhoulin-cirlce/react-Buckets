@@ -8,7 +8,8 @@ module.exports={
     //打包后的文件到当前目录下的dist文件夹，名为bundle.js
     output:{
         path:path.join(__dirname,'./dist'),
-        filename:'bundle.js'
+        filename:'bundle.js',
+        chunkFilename:'[name].js'
     },
     module:{
         rules:[
@@ -23,7 +24,17 @@ module.exports={
                     {loader:'css-loader',options:{importLoaders:1}},
                     { loader: 'less-loader', options: { strictMath: true, noIeCompat: true } }
                 ]
+            },
+            {
+                test:/\.(png|jpg|gif)$/,
+                use:[{
+                    loader:'url-loader',
+                    options:{
+                        limit:8192
+                    }
+                }]
             }
+
         ]
     },
     devServer: {

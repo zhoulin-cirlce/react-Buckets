@@ -1,6 +1,7 @@
 import React,{Component} from 'react';
 import {connect} from 'react-redux';
 import {getUserInfo} from "actions/userInfo";
+import imgSrc from '../../../public/image/react15.png'
 
 class UserInfo extends Component{
     render(){
@@ -13,6 +14,7 @@ class UserInfo extends Component{
                         errMsg ? errMsg :
                             <div>
                                 <h2>个人资料</h2>
+                                <img src={imgSrc}/>
                                 <ul>
                                     <li>姓名：{userInfo.name}</li>
                                     <li>年龄：{userInfo.age}</li>

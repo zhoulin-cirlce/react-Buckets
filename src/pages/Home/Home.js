@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import './Home.less'
+import './Home.less';
 export default class Home extends Component{
     constructor(props){
         super(props);

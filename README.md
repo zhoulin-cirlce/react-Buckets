@@ -1008,9 +1008,139 @@ import './Home.less'
 因为添加了新的依赖，我们重新跑一次npm run start,效果如图
 <img src="/public/image/react14.png" hieght="600px"/>
 
-
 ## 图片编译
+先进行一个测试,打开src/Pages/UserInfo/UserInfo.js
+```js
+import imgSrc from '../../../public/image/react15.png'
+    ...
+    <h2>个人资料</h2>
+    <img src={imgSrc}/>
+```
+运行后，页面报错
+<img src="/public/image/react16.png" hieght="600px"/>
+
+出现这个错误是因为打包后的文件找不到我们之前写好的相对路径。对此，我们可以用如下方式解决。
+首先我们要安装两个依赖：
+* file-loader 当我们写样式比如背景图片，我们的路径是相对于当前文件的，但webpack最终会打包成一个文件。打包后的相对路径会找不到对应文件。这时，file-loader可以帮我们找到正确的文件路径。
+* url-loader 如果图片过多，会增加过多的http请求，url-loader提示图片base64编码服务，设定limit参数，小于设置值的图片会被转为一串字符，只需将字符打包到文件中，就能访问图片了。
+```shell
+npm install --save-dev url-loader file-loader
+```
+在webpack.dev.config.js增加配置
+```js
+module:{
+        rules:[
+            ...
+            {
+                test:/\.(png|jpg|gif)$/,
+                use:[{
+                    loader:'url-loader',
+                    options:{
+                        // 设置为小于8K的大小
+                        limit:8192
+                    }
+                }]
+            }
+        ]
+}
+```
+配置成功后，我们重新运行npm run start(因为新加了依赖要重新跑一次服务)，看下效果（PS：盗用大幂幂的照片^_^）
+<img src="/public/image/react17.png" hieght="600px"/>
+
 ## 按需加载
+我们打包后，页面统一生成bundle.js，当我们进入Home页面时，因为加载的文件过多会导致页面慢。我们想要达到跳转到对应页面时按需加载文件的效果，就需要用到bundle-loader。
+* 安装
+```shell
+npm install bundle-loader --save
+```
+* 在router下新建Bundle.js
+```shell
+cd src/router
+touch Bundle.js
+```
+打开Bundle.js，根据[示例](https://reacttraining.com/react-router/web/guides/code-splitting)
+```js
+import React,{Component} from 'react'
+class Bundle extends Component{
+    state={
+        mod:null
+    };
+    componentWillMount(){
+        this.load(this.props)
+    }
+    componentWillReceiveProps(nextProps){
+        if(nextProps.load !== this.props.load){
+            this.load(nextProps)
+        }
+    }
+    load(props){
+        this.setState({
+            mod:null
+        });
+        props.load((mod)=>{
+            this.setState({
+                mod:mod.default ? mod.default : mod
+            })
+        })
+    }
+    render(){
+        return this.props.children(this.state.mod)
+    }
+}
+export default Bundle;
+```
+* 路由配置改造，src/router/router.js
+```js
+import React from 'react';
+import {BrowserRouter as Router,Route,Switch,Link} from 'react-router-dom';
+
+import Home from 'bundle-loader?lazy&name=home!pages/Home/Home';
+import About from 'bundle-loader?lazy&name=page1!pages/About/About';
+import Counter from 'bundle-loader?lazy&name=counter!pages/Counter/Counter';
+import UserInfo from 'bundle-loader?lazy&name=userInfo!pages/UserInfo/UserInfo';
+const Loading = function(){
+    return <div>Loading...</div>
+};
+const createComponent = (component) => (props) => (
+    <Bundle load={component}>
+        {
+            (Componet) => Component ? <Component {...props} /> : <Loading/>
+        }
+    </Bundle>
+);
+const getRouter=()=>(
+    <Router>
+        <div>
+            <ul>
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/about">About</Link></li>
+                <li><Link to="counter">Counter</Link></li>
+                <li><Link to="userinfo">UserInfo</Link></li>
+            </ul>
+        
+            <Switch>
+                <Route exact path="/" component={createComponent(Home)}/>
+                <Route path="/about" component={createComponent(About)}/>
+                <Route path="/counter" component={createComponent(Counter)}/>
+                <Route path="/userinfo" component={createComponent(UserInfo)}/>
+            </Switch>
+        </div>
+    </Router>
+
+);
+export default getRouter;
+```
+* 修改webpack.dev.config.js配置，使打包输出的文件名对应
+```js
+output:{
+    path:path.join(__dirname,'./dist'),
+    filename:'bundle.js',
+    chunkFilename:'[name].js'
+}
+```
+运行npm run start 效果如图
+<img src="/public/image/react18.png" hieght="600px"/>
+
 ## 缓存
 ## HtmlWEbpackPlugin
 ## 公共代码提取
