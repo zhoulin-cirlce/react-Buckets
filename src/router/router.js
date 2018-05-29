@@ -8,7 +8,7 @@ import Bundle from './Bundle';
 
 const Loading = function(){
     return <div>Loading...</div>
-};
+}; 
 const createComponent = (component) => (props) => (
     <Bundle load={component}>
         {

@@ -1194,10 +1194,159 @@ plugins:[new HtmlWebpackPlugin({
 ```
 此时删掉之前的dist/index.html,运行npm run start访问正常。
 ## 公共代码提取
+我们打包生成的文件js文件中，都包含了react,redux,react-router这样的代码。然而这些依赖代码我们在很多文件都引用了，而不需要它自动更新。所以我们可以把这些公共代码提取出来。
+我们根据[教程](https://webpack.docschina.org/guides/caching/#%E6%8F%90%E5%8F%96%E6%A8%A1%E6%9D%BF-extracting-boilerplate-)配置。
+* 打开webpack.dev.config.js
+```js
+var webpack=require('webpack');
+module.exports={
+    entry:{
+        app:[
+            'react-hot-loader/patch',
+            path.join(__dirname,'src/index.js')
+        ],
+        vendor:['react','react-router-dom','redux','react-dom','react-redux']
+    },
+    new webpack.optimize.CommonsChunkPlugin({
+        name:'vendor'
+    })
+}
+```
+重新运行，打包文件如下
+<img src="/public/image/react20.png" hieght="300px"/>
+
+可以发现app.[hash].js和vendor.[hash].js生成的hash是一样的。也就意味着如果代码有改动app.[hash].js与vendor.[hash].js都会同时改变。然后vendor里的内容我们不希望它更新。根据文档，我要在webpack里还要配置
+<img src="/public/image/react21.png" hieght="300px"/>
+
+应用到我们项目应该
+```js
+output:{
+    path:path.join(__dirname,'./dist'),
+    filename:'[name].[chunkhash].js',
+    chunkFilename:'[name].[chunkhash].js'
+}
+```
+再次运行，发现报错，webpack-dev-server --hot 不兼容chunkhash
+<img src="/public/image/react22.png" hieght="300px"/>
+
+解决这个问题，我们要先区分生产环境与开发环境的区别。所以，上面的问题先留一下，我们先来构建生产环境的配置。
 ## 生产环境构建
+生产环境与开发环境的区别往往体现在目标差异大。开发环境我们要配置的东西很多，要求实时加裁，热更新模块等。但生产环境要求较小，更关注小的bundle，更轻量的Source map，更高效的加载时间等。
+* 首先创建配置文件
+```shell
+touch webpack.config.js
+```
+* 将之前webpack.dev.config.js的内容复制到webpack.config.js中，删除一些和开发环境有关的几点：
+1. webpack-dev-server相关内容
+2. devtool的值改成 cheap-module-source-map
+3. 输出文件名增加字符改为chunkhash,原本的webpack.dev.config.js改回为hash
+根据以上几点，webpack.config.js内容如下：
+```js
+var path=require('path');
+var HtmlWebpackPlugin=require('html-webpack-plugin');
+var webpack=require('webpack');
+module.exports={
+    // 入口文件指向src/index.js
+    entry:{
+        app:[
+            'react-hot-loader/patch',
+            path.join(__dirname,'src/index.js')
+        ],
+        vendor:['react','react-router-dom','redux','react-dom','react-redux']
+    },
+    //打包后的文件到当前目录下的dist文件夹，名为bundle.js 
+    output:{
+        path:path.join(__dirname,'./dist'),
+        filename:'[name].[chunkhash].js',
+        chunkFilename:'[name].[chunkhash].js'
+    },
+    module:{
+        rules:[
+            {
+                test:/\.js$/,
+                use:['babel-loader?cacheDirectory=true'],
+                include:path.join(__dirname,'src')
+            },{
+                test:/\.less$/,
+                use:[
+                    'style-loader',
+                    {loader:'css-loader',options:{importLoaders:1}},
+                    { loader: 'less-loader', options: { strictMath: true, noIeCompat: true } }
+                ]
+            },
+            {
+                test:/\.(png|jpg|gif)$/,
+                use:[{
+                    loader:'url-loader',
+                    options:{
+                        limit:8192
+                    }
+                }]
+            }
+
+        ]
+    },
+    plugins:[
+        new HtmlWebpackPlugin({
+            filename:'index.html',
+            template:path.join(__dirname,'src/index.html')
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'vendor'
+        })
+    ],
+    devtool:"cheap-module-source-map",
+    resolve:{
+        alias:{
+            pages:path.join(__dirname,'src/pages'),
+            component:path.join(__dirname,'src/component'),
+            router:path.join(__dirname,'src/router'),
+            actions:path.join(__dirname,'src/redux/actions'),
+            reducers:path.join(__dirname,'src/redux/reducers'),
+            // redux:path.join(__dirname,'src/redux') 与模块重名
+        }
+    }
+};
+```
+* 在package.json中增加build打包命令，指定配置文件。
+```js
+ "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js",
+    "start": "webpack-dev-server --config webpack.dev.config.js --color --progress --hot"
+  },
+```
+运行一次打包命令 npm run build，文件名支持了chunkhash.
+<img src="/public/image/react23.png" hieght="300px"/>
+
+虽然文件名不同了，但是改变代码重新打包会发现app.[hash].js和vendor.[chunkhash].js一样都更新了名字，这不就和没拆分是一样的吗？
+别着急，看官网介绍
+<img src="/public/image/react24.png" hieght="600px"/>
+
+<b>注意mainfest与vendor的顺序不能错哦</b>
+打开webpack.config.js
+ ```js
+ plugins:[
+        new HtmlWebpackPlugin({
+            filename:'index.html',
+            template:path.join(__dirname,'src/index.html')
+        }),
+        new webpack.HashedModuleIdsPlugin(),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'vendor'
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'mainfest'
+        })
+        
+    ],
+
+ ```
+## 优化缓存
+
 ## 文件压缩
 ## 指定环境
-## 优化缓存
+
 ## public patch 
 ## 打包优化
 ## 抽取css

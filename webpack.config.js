@@ -13,12 +13,12 @@ module.exports={
     //打包后的文件到当前目录下的dist文件夹，名为bundle.js 
     output:{
         path:path.join(__dirname,'./dist'),
-        filename:'[name].[hash].js',
+        filename:'[name].[chunkhash].js',
         chunkFilename:'[name].[chunkhash].js'
     },
     module:{
         rules:[
-            {
+            { 
                 test:/\.js$/,
                 use:['babel-loader?cacheDirectory=true'],
                 include:path.join(__dirname,'src')
@@ -47,17 +47,16 @@ module.exports={
             filename:'index.html',
             template:path.join(__dirname,'src/index.html')
         }),
+        new webpack.HashedModuleIdsPlugin(),
         new webpack.optimize.CommonsChunkPlugin({
             name:'vendor'
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'mainfest'
         })
-    ],
-    devServer: {
-        port: 8000,
-        contentBase: path.join(__dirname, './dist'),
-        // historyApiFallback: true
         
-    },
-    devtool:"inline-source-map",
+    ],
+    devtool:"cheap-module-source-map",
     resolve:{
         alias:{
             pages:path.join(__dirname,'src/pages'),
