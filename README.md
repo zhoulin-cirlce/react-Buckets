@@ -1455,7 +1455,124 @@ module.exports={
 重新打包，就能看到被生成的css文件啦
 <img src="/public/image/react26.png" hieght="600px"/>
 
-## 使用axios和middleware优化API请求
+## axios
+* 安装axios
+```shell
+npm install --save axios
+```
+* 然后简化之前写的userInfo的action,修改redux/actions/userInfo.js
+```js
+export const GET_USERINFO_REQUEST="userInfo/GET_USERINFO_REQUEST";
+export const GET_USERINFO_SUCCESS="userInfo/GET_USERINFO_SUCCESS";
+export const GET_USERINFO_FAIL="userInfo/GET_USERINFO_FAIL";
+
+export function getUserInfo(){
+    return{
+        types:[GET_USERINFO_REQUEST,GET_USERINFO_SUCCESS,GET_USERINFO_FAIL],
+        promise:client => client.get('/api/userInfo.json')     
+    }
+}
+```
+其中dispath(getUserInfo())后，是通过redux的中间件来处理的。为了弄清楚，我们自己来写一个。
+#### 自定义Middleware
+* 清理逻辑
+1. 发起请求前 dispatch REQUEST;
+2. 请求成功后 dispatch SUCESS,再执行callback;
+3. 请求失败后 dispatch FAIL。
+* 创建基本文件
+```shell
+cd src/redux
+mkdir middleware && cd middleware
+touch promiseMiddleware.js
+```
+* 定义promiseMiddleware.js的内容
+```js
+import axios from 'axios';
+export default store => next =>action =>{
+    const {dispatch,getState}=store;
+    // 如果dispatch传来的是一个function,则跳过
+    if(typeof action === 'function'){
+        action(dispatch,getState);
+        return ;
+    }
+    // 解析action
+    const {
+        promise,
+        types,
+        afterSuccess,
+        ...rest
+    }=action;
+    // 如果不是异步请求则直接跳转下一步
+    if(!action.promise){
+        return next(action);
+    }
+    // 解析types
+    const [REQUEST,SUCCESS,FAILURE]=types;
+    // 发送action
+    next({
+        ...rest,
+        type:REQUEST
+    });
+    // 成功
+    const onFulfilled = result=>{
+        next({
+            ...rest,
+            result,
+            type:SUCCESS
+        });
+        if(afterSuccess){
+            afterSuccess(dispatch,getState,result);
+        }
+    };
+    // 失败
+    const onRejected=error=>{
+        next({
+            ...rest,
+            error,
+            type:FAILURE
+        });
+    };
+    return promise(axios).then(onFulfilled,onRejected).catch(error=>{
+        console.error('MIDDLEWARE ERROR:',error);
+        onRejected(error)
+    })
+}
+```
+
+* 在src/redux/store.js中应用中间件
+
+```js
+import {createStore,applyMiddleware} from 'redux';
+import combineReducers from './reducers.js';
+// import thunkMiddleware from 'redux-thunk';
+// let store = createStore(combineReducers,applyMiddleware(thunkMiddleware));
+
+import promiseMiddleware from './middleware/promiseMiddleware';
+let store = createStore(combineReducers,applyMiddleware(promiseMiddleware));
+
+export default store;
+```
+
+* 最后修改src/redux/reducers/userInfo.js
+因为是当action请求成功，我们在中间件会自动加上一个result字段来存结果。
+
+```js
+export default function reducer(state=initState,action){
+    switch(action.type){
+        ...
+        case GET_USERINFO_SUCCESS: 
+            return{
+                ...state,
+                isLoading:false,
+                userInfo:action.result.data,
+                errMsg:''
+            }
+    }
+}
+```
+我们重启npm run start ,访问userInfo接口是不是成功啦！
+
+
 ## 调整文本编辑器
 ## webpack配置优化
 ## 404页面增加
