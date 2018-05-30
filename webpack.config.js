@@ -1,6 +1,9 @@
 var path=require('path');
 var HtmlWebpackPlugin=require('html-webpack-plugin');
 var webpack=require('webpack');
+const UglifyJSPlugin=require('uglifyjs-webpack-plugin');
+const CleanWebpackPlugin=require('clean-webpack-plugin');
+const ExtractTextPlugin=require("extract-text-webpack-plugin");
 module.exports={
     // 入口文件指向src/index.js
     entry:{
@@ -14,7 +17,8 @@ module.exports={
     output:{
         path:path.join(__dirname,'./dist'),
         filename:'[name].[chunkhash].js',
-        chunkFilename:'[name].[chunkhash].js'
+        chunkFilename:'[name].[chunkhash].js',
+        publicPath:'/'
     },
     module:{
         rules:[
@@ -23,7 +27,7 @@ module.exports={
                 use:['babel-loader?cacheDirectory=true'],
                 include:path.join(__dirname,'src')
             },{
-                test:/\.less$/,
+                test:/\.(less|css)$/,
                 use:[
                     'style-loader',
                     {loader:'css-loader',options:{importLoaders:1}},
@@ -38,6 +42,13 @@ module.exports={
                         limit:8192
                     }
                 }]
+            },
+            {
+                test:/\.(css|less)$/,
+                use:ExtractTextPlugin.extract({
+                    fallback:"style-loader",
+                    use:["css-loader","less-loader"]
+                })
             }
 
         ]
@@ -53,6 +64,17 @@ module.exports={
         }),
         new webpack.optimize.CommonsChunkPlugin({
             name:'mainfest'
+        }),
+        new webpack.DefinePlugin({
+            'process.env':{
+                'NODE_ENV':JSON.stringify('production')
+            }
+        }),
+        new UglifyJSPlugin(),
+        new CleanWebpackPlugin(['dist']),
+        new ExtractTextPlugin({
+            filename:'[name].[contenthash:5].css',
+            allChunks:true
         })
         
     ],

@@ -1207,9 +1207,12 @@ module.exports={
         ],
         vendor:['react','react-router-dom','redux','react-dom','react-redux']
     },
-    new webpack.optimize.CommonsChunkPlugin({
-        name:'vendor'
-    })
+    plugins:[
+        ...
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'vendor'
+        })
+    ]
 }
 ```
 重新运行，打包文件如下
@@ -1342,14 +1345,116 @@ module.exports={
     ],
 
  ```
-## 优化缓存
+当我们构建了基础的生产环境配置后，我们可以增加指定环境配置，根据process.env.NODE_ENV环境变量关联，让[library](http://www.css88.com/doc/webpack/guides/author-libraries/)中应该引用哪些内容。例如，当不处于生产环境中时，library可能会添加额外的日志log和test。当使用 process.env.NODE_ENV === 'production' 时，一些 library 可能针对具体用户的环境进行代码优化，从而删除或添加一些重要代码。
+*  打开webpack.config.js
+```js
+module.exports={
+    plugins:[
+        ...
+        new webpack.DefinePlugin({
+            'process.env':{
+                'NODE_ENV':JSON.stringify('production')
+            }
+        })
+    ]
+}
+```
 
-## 文件压缩
-## 指定环境
-
-## public patch 
 ## 打包优化
-## 抽取css
+#### 文件压缩
+webpack使用UglifyJSPlugin来压缩打包后生成的文件。
+* 安装
+```shell
+npm install uglifyjs-webpack-plugin --save-dev
+```
+* 打开webpack.config.js进行配置
+```js
+const UglifyJSPlugin=require('uglifyjs-webpack-plugin')
+module.exports={
+    plugins:[
+        ...
+        new UglifyJSPlugin()
+    ]
+}
+```
+运行npm run build有没有发现打包的文件小了好多
+<img src="/public/image/react25.png" hieght="600px"/>
+
+#### 清理dist文件
+每次打包dist都会多好多文件混合在里面，我们应该清掉之前打包的文件，只留下当前打包后的文件。我们用到clean-webpack-plugin
+* 安装
+```shell
+npm install clean-webpack-plugin --save-dev
+```
+* 打开webpack.config.js来配置
+```js
+const CleanWebpackPlugin=require('clean-webpack-plugin');
+...
+plugins:[
+    new CleanWebpackPlugin(['dist'])
+]
+```
+现在试试打包一下，每次是不是都是直接覆盖整个文件。虽然api文件也被清掉了，但是没关系，那只是用来测试的。
+#### 静态文件的基本路径
+当我们打包后，静态文件没办法定位到静态服务器，我们需要在webpack.config.js中配置
+```js
+output:{
+    ...
+    publicPath:'/'
+}
+```
+#### css打包分离
+如果我要要将打包到js的css内容抽出来单独成css文件，我们可以使用extract-text-webpack-plugin.
+* 安装
+```shell
+npm install extract-text-webpack-plugin --save-dev
+```
+* 打开webpack.config.js进行配置
+```js
+const ExtractTextPlugin=require("extract-text-webpack-plugin");
+module.exports={
+    module:{
+        rules:[
+            ...
+            {
+                test:/\.(css|less)$/,
+                use:ExtractTextPlugin.extract({
+                    fallback:"style-loader",
+                    use:"css-loader"
+                })
+            }
+        ]
+    },
+    plugins:[
+        ...
+        new ExtractTextPlugin({
+            filename:'[name].[contenthash:5].css',
+            allChunks:true
+        })
+    ]
+}
+```
+我们可以增加一些css文件引用，来测试下。由于我们之前的示例是用less来写的样式，那么我们加上less的[配置](https://github.com/webpack-contrib/extract-text-webpack-plugin)，使之生成独立文件。
+修改刚刚的配置项：
+```js
+module.exports={
+    module:{
+        rules:[
+            ...
+            {
+                test:/\.(css|less)$/,
+                use:ExtractTextPlugin.extract({
+                    fallback:"style-loader",
+                    use:["css-loader","less-loader"]
+                })
+            }
+        ]
+    },
+}
+```
+重新打包，就能看到被生成的css文件啦
+<img src="/public/image/react26.png" hieght="600px"/>
+
 ## 使用axios和middleware优化API请求
 ## 调整文本编辑器
 ## webpack配置优化

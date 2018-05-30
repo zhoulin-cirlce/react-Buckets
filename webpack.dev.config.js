@@ -23,7 +23,7 @@ module.exports={
                 use:['babel-loader?cacheDirectory=true'],
                 include:path.join(__dirname,'src')
             },{
-                test:/\.less$/,
+                test:/\.(less|css)$/,
                 use:[
                     'style-loader',
                     {loader:'css-loader',options:{importLoaders:1}},
