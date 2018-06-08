@@ -1572,9 +1572,164 @@ export default function reducer(state=initState,action){
 ```
 我们重启npm run start ,访问userInfo接口是不是成功啦！
 
+## webpack配置合并
+我们现在针对于不同的环境，创建了webpack.dev.config.js和webpack.config.js两个配置文件。不难发现，两个配置文件有很多一样的配置，而当之后我们需要改某个公共配置时，需要两个文件同时改。这必然会有些麻烦。所以我们可以用webpack-merge来合并公共的配置项。
+* 安装
+```shell
+npm install webpack-merge --save-dev
+touch webpack.common.config.js
+```
+* 打开webpack.common.config.js,提取公共配置,参考[官网](https://www.npmjs.com/package/webpack-merge)
+```js
+const path=require('path');
+const HtmlWebpackPlugin=require('html-webpack-plugin');
+const webpack=require('webpack');
+module.exports={
+    // 入口文件指向src/index.js
+    entry:{
+        app:[
+            'react-hot-loader/patch',
+            path.join(__dirname,'src/index.js')
+        ],
+        vendor:['react','react-router-dom','redux','react-dom','react-redux']
+    },
+    //打包后的文件到当前目录下的dist文件夹，名为bundle.js 
+    output:{
+        path:path.join(__dirname,'./dist'),
+        filename:'[name].[chunkhash].js',
+        chunkFilename:'[name].[chunkhash].js',
+        publicPath:'/'
+    },
+    module:{
+        rules:[
+            {
+                test:/\.js$/,
+                use:['babel-loader?cacheDirectory=true'],
+                include:path.join(__dirname,'src')
+            },
+            {
+                test:/\.(png|jpg|gif)$/,
+                use:[{
+                    loader:'url-loader',
+                    options:{
+                        limit:8192
+                    }
+                }]
+            }
+        ]
+    },
+    plugins:[
+        new HtmlWebpackPlugin({
+            filename:'index.html',
+            template:path.join(__dirname,'src/index.html')
+        }),
+        new webpack.HashedModuleIdsPlugin(),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'vendor'
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'mainfest'
+        }),
+    ],
+    resolve:{
+        alias:{
+            pages:path.join(__dirname,'src/pages'),
+            component:path.join(__dirname,'src/component'),
+            router:path.join(__dirname,'src/router'),
+            actions:path.join(__dirname,'src/redux/actions'),
+            reducers:path.join(__dirname,'src/redux/reducers'),
+            // redux:path.join(__dirname,'src/redux') 与模块重名
+        }
+    }
+}
+```
+* webpack.dev.config.js
+```js
+const merge=require('webpack-merge');
+const path=require('path');
+const commonConfig=require('./webpack.common.config.js');
+const devConfig={
+   output:{
+        //react-hot-loader不兼容，故改回[hash]
+        filename:'[name].[hash].js',
+   },
+    module:{
+        rules:[
+            {
+                test:/\.(less|css)$/,
+                use:[
+                    'style-loader',
+                    {loader:'css-loader',options:{importLoaders:1}},
+                    { loader: 'less-loader', options: { strictMath: true, noIeCompat: true } }
+                ]
+            }
+        ]
+    },
+    devServer: {
+        port: 8000,
+        contentBase: path.join(__dirname, './dist'),
+        // historyApiFallback: true
+        
+    },
+    devtool:"inline-source-map",
+};
+module.exports=merge({
+    customizeArray(a,b,key){
+        if(key==='extensions'){
+            return _.uniq(a,b);
+        }
+        return undefined;
+    }
+})(commonConfig,devConfig);
+```
+* webpack.config.js
+```js
+var path=require('path');
+const merge=require('webpack-merge');
+var webpack=require('webpack');
+const UglifyJSPlugin=require('uglifyjs-webpack-plugin');
+const CleanWebpackPlugin=require('clean-webpack-plugin');
+const ExtractTextPlugin=require("extract-text-webpack-plugin");
+const commonConfig=require('./webpack.common.config.js');
+const proConfig={
+    module:{
+        rules:[
+            {
+                test:/\.(less|css)$/,
+                use:[
+                    'style-loader',
+                    {loader:'css-loader',options:{importLoaders:1}},
+                    { loader: 'less-loader', options: { strictMath: true, noIeCompat: true } }
+                ]
+            },
+            {
+                test:/\.(css|less)$/,
+                use:ExtractTextPlugin.extract({
+                    fallback:"style-loader",
+                    use:["css-loader","less-loader"]
+                })
+            }
 
-## 调整文本编辑器
-## webpack配置优化
+        ]
+    },
+    plugins:[
+        new webpack.DefinePlugin({
+            'process.env':{
+                'NODE_ENV':JSON.stringify('production')
+            }
+        }),
+        new UglifyJSPlugin(),
+        new CleanWebpackPlugin(['dist']),
+        new ExtractTextPlugin({
+            filename:'[name].[contenthash:5].css',
+            allChunks:true
+        })
+        
+    ],
+    devtool:"cheap-module-source-map",
+};
+module.exports=merge(commonConfig,proConfig);
+```
 ## 404页面增加
 ## babel-plugin-transform-runtime和babel-polyfill
 ## PostCss

@@ -1,56 +1,23 @@
-var path=require('path');
-var HtmlWebpackPlugin=require('html-webpack-plugin');
-var webpack=require('webpack');
-module.exports={
-    // 入口文件指向src/index.js
-    entry:{
-        app:[
-            'react-hot-loader/patch',
-            path.join(__dirname,'src/index.js')
-        ],
-        vendor:['react','react-router-dom','redux','react-dom','react-redux']
-    },
-    //打包后的文件到当前目录下的dist文件夹，名为bundle.js 
-    output:{
-        path:path.join(__dirname,'./dist'),
+const merge=require('webpack-merge');
+const path=require('path');
+const commonConfig=require('./webpack.common.config.js');
+const devConfig={
+   output:{
+        //react-hot-loader不兼容，故改回[hash]
         filename:'[name].[hash].js',
-        chunkFilename:'[name].[chunkhash].js'
-    },
+   },
     module:{
         rules:[
             {
-                test:/\.js$/,
-                use:['babel-loader?cacheDirectory=true'],
-                include:path.join(__dirname,'src')
-            },{
                 test:/\.(less|css)$/,
                 use:[
                     'style-loader',
                     {loader:'css-loader',options:{importLoaders:1}},
                     { loader: 'less-loader', options: { strictMath: true, noIeCompat: true } }
                 ]
-            },
-            {
-                test:/\.(png|jpg|gif)$/,
-                use:[{
-                    loader:'url-loader',
-                    options:{
-                        limit:8192
-                    }
-                }]
             }
-
         ]
     },
-    plugins:[
-        new HtmlWebpackPlugin({
-            filename:'index.html',
-            template:path.join(__dirname,'src/index.html')
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name:'vendor'
-        })
-    ],
     devServer: {
         port: 8000,
         contentBase: path.join(__dirname, './dist'),
@@ -58,14 +25,12 @@ module.exports={
         
     },
     devtool:"inline-source-map",
-    resolve:{
-        alias:{
-            pages:path.join(__dirname,'src/pages'),
-            component:path.join(__dirname,'src/component'),
-            router:path.join(__dirname,'src/router'),
-            actions:path.join(__dirname,'src/redux/actions'),
-            reducers:path.join(__dirname,'src/redux/reducers'),
-            // redux:path.join(__dirname,'src/redux') 与模块重名
-        }
-    }
 };
+module.exports=merge({
+    customizeArray(a,b,key){
+        if(key==='extensions'){
+            return _.uniq(a,b);
+        }
+        return undefined;
+    }
+})(commonConfig,devConfig);
