@@ -1,9 +1,10 @@
-# 对于create-react-app生成的脚手架，所有的配置用react-scripts包封装了起来。如果我们想要修改里面的配置，我们可以用以下几种方法：
+# create-react-app修改配置
+ 对于create-react-app生成的脚手架，所有的配置用react-scripts包封装了起来。如果我们想要修改里面的配置，我们可以用以下几种方法：
 ## eject
-在此之前，我们用create-react-app(CRA)命令生成的文件目录如下图
-<img src="./public/images/1.png" height="400px" align="center"/>
+* 在此之前，我们用create-react-app(CRA)命令生成的文件目录如下图
+<img src="./public/images/1.png" height="400px" />
 
-并没有独立的config文件，package.json的命令配置有一条eject命令
+ 并没有独立的config文件，package.json的命令配置有一条eject命令
 ```js
 "eject": "react-scripts eject"
 ```
